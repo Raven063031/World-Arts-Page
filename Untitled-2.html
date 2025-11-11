@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>World Arts Page</title>
+	<style>
+		:root{
+			--accent:#137f4a;
+			--card-bg: rgba(255,255,255,0.88);
+			--panel-shadow: 0 8px 24px rgba(15,15,15,0.35);
+			--blur-px: 6px; /* ~25% visual blur approximation */
+			--max-width:1100px;
+			/* moved items up by 25vh (was 60vh) */
+			--items-offset-vh: 35vh; /* how far down the items are placed */
+		}
+		/* Background image blurred via pseudo-element */
+		html,body{height:100%;}
+		body{
+			margin:0;
+			font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+			color:#0f1720;
+			display:flex;
+			justify-content:center;
+			align-items:flex-start;
+			padding:48px 20px;
+			backdrop-filter: none;
+			position:relative;
+			min-height:100vh;
+		}
+		body::before{
+			content:"";
+			position:fixed;
+			inset:0;
+			z-index:-1;
+			background-image: url('file:///C:/Users/Jhon Vergel/Downloads/Gemini_Generated_Image_a69e0ha69e0ha69e.png');
+			background-size:cover;
+			background-position:center;
+			filter: blur(var(--blur-px)) brightness(0.85);
+			transform: scale(1.03);
+			pointer-events:none;
+		}
+
+		.container{
+			width:100%;
+			max-width:var(--max-width);
+			margin:0 auto;
+		}
+
+		/* header becomes a centered hero area (height matches items offset) */
+		header{
+			position:relative;
+			display:flex;
+			justify-content:center;
+			align-items:center;
+			/* height matches the reserved top area so title is centered vertically */
+			height: calc(var(--items-offset-vh) - 24px);
+			margin:0 0 8px 0;
+		}
+		/* Old English title style with green→black gradient text and white glow edges */
+		h1{
+			font-family: "Old English Text MT","Blackletter","UnifrakturCook","Times New Roman",serif;
+			letter-spacing:1px;
+			/* 3x larger */
+			font-size: calc(44px * 3); /* ≈132px */
+			margin:0;
+			background: linear-gradient(180deg, var(--accent) 0%, #000 100%);
+			-webkit-background-clip: text;
+			background-clip: text;
+			-webkit-text-fill-color: transparent;
+			color: transparent;
+			z-index:1;
+			/* white glow on edges using drop-shadow filter */
+			filter: drop-shadow(0 0 8px rgba(255,255,255,0.9))
+					drop-shadow(0 0 16px rgba(255,255,255,0.6))
+					drop-shadow(0 0 24px rgba(255,255,255,0.3));
+		}
+		/* keep cart visible in top-right of the header/hero area */
+		.cart{
+			position:absolute;
+			top:12px;
+			right:12px;
+			font-size:14px;
+			color:#fff;
+			background:var(--accent);
+			padding:8px 12px;
+			border-radius:8px;
+			box-shadow: var(--panel-shadow);
+			z-index:2;
+		}
+
+		/* Keep page content unobtrusive: remove large panel background/box.
+		   Add top padding so items (.grid) start below the initial viewport. */
+		main{
+			background: transparent;
+			/* push items below the page using viewport-based top padding */
+			padding: calc(var(--items-offset-vh)) 0 24px 0;
+			border-radius:0;
+			box-shadow: none;
+			backdrop-filter: none;
+			min-height: 100vh;
+			box-sizing: border-box;
+		}
+
+		/* single-row layout: horizontal scroll with optional snap */
+		.grid{
+			display:flex;
+			flex-direction:row;
+			gap:28px; /* spacing between boxes */
+			align-items:flex-start;
+			justify-content:flex-start;
+			overflow-x:auto;
+			padding:10px 6px;
+			-webkit-overflow-scrolling:touch;
+			scroll-snap-type: x proximity;
+		}
+
+		/* Remove heavy card box; use a thin frame around the image only */
+		.card{
+			background: transparent;
+			border-radius:6px;
+			padding:0;
+			display:flex;
+			flex-direction:column;
+			align-items:center;
+			gap:8px;
+			border: none;
+			box-shadow: none;
+			flex: 0 0 auto; /* keep fixed width, don't grow or shrink */
+			cursor: pointer;
+		}
+		/* small fixed portrait frame (9:16). adjust --frame-w to change size */
+		:root{ --frame-w: 180px; } /* smaller box width */
+		.card figure{
+			margin:0;
+			width:var(--frame-w);
+			aspect-ratio: 9 / 16; /* fixed portrait ratio for the whole frame */
+			position:relative;
+			padding:0;
+			border:1px solid rgba(0,0,0,0.08);
+			border-radius:8px;
+			overflow:hidden;
+			background:#f8f8f8;
+			scroll-snap-align:start;
+			transform-origin:center center;
+			transition: transform 220ms ease, box-shadow 220ms ease;
+		}
+		/* image fills the entire 9:16 frame (covers), meta overlays at the bottom */
+		.card .img-wrap{
+			position:absolute;
+			inset:0;
+			display:block;
+		}
+		.card img{
+			width:100%;
+			height:100%;
+			object-fit:cover; /* image fixed inside the 9:16 frame */
+			display:block;
+		}
+		/* hover/keyboard-focus zoom effect */
+		.card:hover figure,
+		.card:focus-within figure {
+			transform: scale(1.06);
+			box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+		}
+
+		.card .meta{
+			position:absolute;
+			left:0;
+			right:0;
+			bottom:0;
+			padding:8px;
+			box-sizing:border-box;
+			background: linear-gradient(to top, rgba(255,255,255,0.95), rgba(255,255,255,0.55));
+		}
+
+		.card h3{
+			margin:0;
+			font-size:15px;
+			color:#06201a;
+			text-align:center;
+		}
+		.card .price{
+			color:var(--accent);
+			font-weight:600;
+			font-size:14px;
+			margin-top:6px;
+		}
+		.card .actions{
+			display:flex;
+			width:100%;
+			justify-content:center;
+			gap:8px;
+			margin-top:8px;
+		}
+		button.btn{
+			border:0;
+			background:var(--accent);
+			color:white;
+			padding:8px 12px;
+			border-radius:8px;
+			cursor:pointer;
+			font-weight:600;
+			box-shadow: 0 6px 14px rgba(19,127,74,0.18);
+		}
+		button.btn.secondary{
+			background:transparent;
+			color:var(--accent);
+			border:1px solid rgba(19,127,74,0.12);
+		}
+
+		.footer-note{
+			margin-top:12px;
+			font-size:12px;
+			color:rgba(0,0,0,0.6);
+			text-align:center;
+		}
+
+		/* responsive */
+		@media (max-width:780px){
+			/* stack to single column on narrower screens */
+			.grid{ grid-template-columns: 1fr; justify-items:center; }
+			:root{ --frame-w: 260px; } /* slightly larger on narrow view for readability */
+			/* reduce the offset on smaller viewports and move items up by 25vh (was 40vh) */
+			:root{ --items-offset-vh: 15vh; }
+		}
+		@media (max-width:520px){
+			/* keep title large but readable on very small screens (3x the small base) */
+			h1{font-size: calc(32px * 3); } /* ≈96px */
+			.card figure{ /* slightly shorter on very small screens */ aspect-ratio: 9 / 12; }
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<header>
+			<h1>World Arts Page</h1>
+			<div class="cart" id="cart">Cart: <span id="count">0</span></div>
+		</header>
+
+		<main>
+			<div class="grid">
+				<!-- Product 1: green pens (updated: meta moved inside figure) -->
+				<div class="card">
+					<figure>
+						<div class="img-wrap">
+							<img src="file:///C:/Users/Jhon Vergel/Downloads/471317512_599460082614848_1809779505380509604_n.jpg" alt="Green branded pens">
+						</div>
+						<div class="meta">
+							<h3>Branded Green Pens</h3>
+							<div class="price">$0.60 each</div>
+							<div class="actions">
+								<button class="btn" data-title="Branded Green Pens">Add</button>
+								<button class="btn secondary" onclick="window.open('file:///C:/Users/Jhon Vergel/Downloads/471317512_599460082614848_1809779505380509604_n.jpg')">View</button>
+							</div>
+						</div>
+					</figure>
+				</div>
+
+				<!-- Product 2 (apply same structure for all products) -->
+				<div class="card">
+					<figure>
+						<div class="img-wrap">
+							<img src="file:///C:/Users/Jhon Vergel/Downloads/471111850_598363552724501_8750510133646152029_n.jpg" alt="Mugs and badges set">
+						</div>
+						<div class="meta">
+							<h3>Custom Mug & Badge Set</h3>
+							<div class="price">$8.00</div>
+							<div class="actions">
+								<button class="btn" data-title="Custom Mug & Badge Set">Add</button>
+								<button class="btn secondary" onclick="window.open('file:///C:/Users/Jhon Vergel/Downloads/471111850_598363552724501_8750510133646152029_n.jpg')">View</button>
+							</div>
+						</div>
+					</figure>
+				</div>
+
+				<!-- Product 3 -->
+				<div class="card">
+					<figure>
+						<div class="img-wrap">
+							<img src="file:///C:/Users/Jhon Vergel/Downloads/480560279_636500038923603_2480766204194123951_n.jpg" alt="Stainless bottle">
+						</div>
+						<div class="meta">
+							<h3>Branded Water Bottle</h3>
+							<div class="price">$12.00</div>
+							<div class="actions">
+								<button class="btn" data-title="Branded Water Bottle">Add</button>
+								<button class="btn secondary" onclick="window.open('file:///C:/Users/Jhon Vergel/Downloads/480560279_636500038923603_2480766204194123951_n.jpg')">View</button>
+							</div>
+						</div>
+					</figure>
+				</div>
+
+				<!-- Product 4 -->
+				<div class="card">
+					<figure>
+						<div class="img-wrap">
+							<img src="file:///C:/Users/Jhon Vergel/Downloads/471370685_599450742615782_6548113892644721422_n.jpg" alt="Stack of pens">
+						</div>
+						<div class="meta">
+							<h3>Green Pen Pack (10)</h3>
+							<div class="price">$5.00</div>
+							<div class="actions">
+								<button class="btn" data-title="Green Pen Pack (10)">Add</button>
+								<button class="btn secondary" onclick="window.open('file:///C:/Users/Jhon Vergel/Downloads/471370685_599450742615782_6548113892644721422_n.jpg')">View</button>
+							</div>
+						</div>
+					</figure>
+				</div>
+
+				<!-- Product 5 -->
+				<div class="card">
+					<figure>
+						<div class="img-wrap">
+							<img src="file:///C:/Users/Jhon Vergel/Downloads/471129829_597326902828166_7582097524631904874_n.jpg" alt="Collection of branded mugs">
+						</div>
+						<div class="meta">
+							<h3>Assorted Branded Mugs</h3>
+							<div class="price">$7.50</div>
+							<div class="actions">
+								<button class="btn" data-title="Assorted Branded Mugs">Add</button>
+								<button class="btn secondary" onclick="window.open('file:///C:/Users/Jhon Vergel/Downloads/471129829_597326902828166_7582097524631904874_n.jpg')">View</button>
+							</div>
+						</div>
+					</figure>
+				</div>
+
+				<!-- Product 6 -->
+				<div class="card">
+					<figure>
+						<div class="img-wrap">
+							<img src="file:///C:/Users/Jhon Vergel/Downloads/470873740_598363596057830_231917105372373329_n.jpg" alt="More green pens">
+						</div>
+						<div class="meta">
+							<h3>Promotional Pens (bulk)</h3>
+							<div class="price">$0.45 each</div>
+							<div class="actions">
+								<button class="btn" data-title="Promotional Pens (bulk)">Add</button>
+								<button class="btn secondary" onclick="window.open('file:///C:/Users/Jhon Vergel/Downloads/470873740_598363596057830_231917105372373329_n.jpg')">View</button>
+							</div>
+						</div>
+					</figure>
+				</div>
+
+			</div>
+
+			<p class="footer-note">Simple minimal shop UI. Local file images are referenced; host them or adjust paths for deployment.</p>
+		</main>
+	</div>
+
+	<script>
+		// minimal cart counter
+		const buttons = document.querySelectorAll('.card .btn');
+		let count = 0;
+		buttons.forEach(btn=>{
+			btn.addEventListener('click', ()=> {
+				count++;
+				document.getElementById('count').textContent = count;
+				// subtle feedback
+				btn.textContent = 'Added';
+				btn.disabled = true;
+				setTimeout(()=>{ btn.textContent = 'Add'; btn.disabled = false; }, 900);
+			});
+		});
+	</script>
+</body>
+</html>
